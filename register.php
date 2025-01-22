@@ -1,61 +1,73 @@
-<?php ?>
-<!doctype html>
+<?php
+
+session_start();
+require 'config/koneksi.php';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+    $name = $_POST['name'];
+
+    // Validasi sederhana untuk menghindari input kosong
+    if (!empty($username) && !empty($password) && !empty($name)) {
+        // Simpan data ke database
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("INSERT INTO user (username, password, name) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $username, $hashedPassword, $name);
+
+        if ($stmt->execute()) {
+            $_SESSION['message'] = "Registrasi berhasil. Silakan login.";
+            header('Location: login.php');
+            exit();
+        } else {
+            $error = "Terjadi kesalahan saat menyimpan data.";
+        }
+
+        $stmt->close();
+    } else {
+        $error = "Semua kolom harus diisi!";
+    }
+}
+
+?>
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container col-sm-4 mx-auto mt-5">
+    <h1 class="text-center">Register</h1>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <?php if (isset($error)): ?>
+        <div class="alert alert-danger">
+            <?= $error; ?>
+        </div>
+    <?php endif; ?>
 
-    <title>Aplikasi Peminjaman Barang</title>
-  </head>
-  <body>
-    <div class="card col-sm-3 mx-auto mt-5">
-      <div class="card-header">
-        From Login
-      </div>
-      <div class="card-body">
-        <form method="POST" action="proses/register_proses.php" autocomplete="off">
-            <div class="from-grup ">
-                <label for="nama">nama</label>
-                <input type="text" name="name" id="nama" class="from-control" placeholder="Masukan name" autofocus>
-            </div>
-          <div class="from-grup ">
-            <label for="email">email</label>
-            <input type="email" name="email" id="email" class="from-control" placeholder="Masukan Email" autofocus>
-          </div>
-          <div class="from-grup ">
-            <label for="username">Username</label>
-            <input type="text" name="username" id="username" class="from-control" placeholder="Masukan Username" autofocus>
-          </div>
-          <div class="from-grup pt-3">
-            <label for="password">Password</label>
-            <input type="text" name="password" id="username" class="from-control" placeholder="Masukan Password" autofocus>
-          </div>
-          <div class="from-grup pt-3">
-            <label for="level mb-3">level</label>
-            <select name="level" id="level" class="form-control">
-              <option value="">-- Sebagai --</option>
-              <option value="2">Operator</option>
-              <option value="1">Admin</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">Masuk</button>
-        </form>
-      </div>
+    <form action="" method="POST">
+        <div class="mb-3">
+            <label for="name" class="form-label">Nama</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="username" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+
+    <div class="text-center mt-3">
+        <p>Sudah punya akun? <a href="login.php">Login di sini</a></p>
     </div>
-
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
-    -->
-  </body>
+</div>
+</body>
 </html>
